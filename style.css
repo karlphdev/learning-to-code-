@@ -1,0 +1,109 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #04050f;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  font-family: monospace;
+}
+
+.wrap {
+  position: relative;
+  width: 640px;
+  height: 576px;
+  border: 2px solid #1a1a2e;
+  overflow: hidden;
+  box-shadow:
+    0 0 50px rgba(100, 200, 255, 0.18),
+    0 0 110px rgba(100, 200, 255, 0.06);
+}
+
+#game {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* ── Scanlines + flicker électrique ─────────────────────────────────── */
+.wrap::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0)    0px,
+    rgba(0, 0, 0, 0)    2px,
+    rgba(0, 0, 0, 0.28) 3px,
+    rgba(0, 0, 0, 0.28) 4px
+  );
+  animation: flicker 5s steps(60) infinite, scan 8s linear infinite;
+}
+
+/* ── Vignette CRT + aberration chromatique + bombé ──────────────────── */
+.wrap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  background:
+    radial-gradient(
+      ellipse 130% 120% at 50% 50%,
+      rgba(0, 0, 0, 0) 55%,
+      rgba(0, 0, 10, 0.55) 100%
+    );
+  box-shadow:
+    inset 0 0 60px rgba(0, 0, 0, 0.4),
+    inset 1.5px 0 0 rgba(255, 0, 80, 0.10),
+    inset -1.5px 0 0 rgba(0, 220, 255, 0.10);
+  mix-blend-mode: normal;
+  animation: chroma 3.5s ease-in-out infinite;
+}
+
+/* Léger scintillement de luminosité (tube CRT) */
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  92%      { opacity: 1; }
+  93%      { opacity: 0.82; }
+  94%      { opacity: 1; }
+  96%      { opacity: 0.9; }
+  97%      { opacity: 1; }
+}
+
+/* Balayage vertical lent de la trame */
+@keyframes scan {
+  0%   { background-position-y: 0; }
+  100% { background-position-y: 4px; }
+}
+
+/* Glitch d'aberration chromatique qui pulse / saute */
+@keyframes chroma {
+  0%, 100% { transform: translateX(0); }
+  48%      { transform: translateX(0); }
+  49%      { transform: translateX(-1px); }
+  50%      { transform: translateX(1px); }
+  51%      { transform: translateX(0); }
+  82%      { transform: translateX(0); }
+  83%      { transform: translateX(1.5px); }
+  84%      { transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wrap::before,
+  .wrap::after { animation: none; }
+}
+
+.hint {
+  color: #2a2a4a;
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-top: 14px;
+}
