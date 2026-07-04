@@ -12,9 +12,10 @@ body {
 
 .wrap {
   position: relative;
-  width: 640px;
-  height: 576px;
-  border: 2px solid #1a1a2e;
+  width: min(96vw, 1024px);
+  aspect-ratio: 16 / 9;          /* le jeu est en 256×144 logique */
+  border: 1px solid #232345;
+  border-radius: 10px;
   overflow: hidden;
   box-shadow:
     0 0 50px rgba(100, 200, 255, 0.18),
@@ -40,8 +41,8 @@ body {
     to bottom,
     rgba(0, 0, 0, 0)    0px,
     rgba(0, 0, 0, 0)    2px,
-    rgba(0, 0, 0, 0.28) 3px,
-    rgba(0, 0, 0, 0.28) 4px
+    rgba(0, 0, 0, 0.10) 3px,
+    rgba(0, 0, 0, 0.10) 4px
   );
   animation: flicker 5s steps(60) infinite, scan 8s linear infinite;
 }
@@ -101,9 +102,12 @@ body {
 }
 
 .hint {
-  color: #2a2a4a;
+  color: #3a3a5e;
   font-size: 9px;
-  letter-spacing: 3px;
+  letter-spacing: 2px;
   text-transform: uppercase;
   margin-top: 14px;
+  max-width: min(96vw, 1024px);
+  text-align: center;
+  line-height: 1.7;
 }
