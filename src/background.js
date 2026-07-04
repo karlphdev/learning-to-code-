@@ -15,9 +15,10 @@ export function buildGradients() {
   skyGrad.addColorStop(1,    '#c9edff');   // horizon pâle
 }
 export function drawSky(frac) {
-  ctx.fillStyle = skyGrad; ctx.fillRect(0, 0, W, H);
+  // déborde de 8px de chaque côté pour couvrir les secousses d'écran
+  ctx.fillStyle = skyGrad; ctx.fillRect(-8, -8, W + 16, H + 16);
   // le ciel pâlit en altitude
-  if (frac > 0) { ctx.fillStyle = 'rgba(238,245,255,' + (0.55 * frac).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H); }
+  if (frac > 0) { ctx.fillStyle = 'rgba(238,245,255,' + (0.55 * frac).toFixed(3) + ')'; ctx.fillRect(-8, -8, W + 16, H + 16); }
 }
 
 // ── Soleil ────────────────────────────────────────────────────────────

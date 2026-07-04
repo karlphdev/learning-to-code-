@@ -52,16 +52,20 @@ export function drawBike(x0, y0, b, spin) {
   ctx.fillStyle = b.accent; ctx.fillRect(x0 + 14, y0, 2, 1);        // liseré aux couleurs du vélo
 }
 
-// Le vélo équipé : agrandi ×PS, orienté selon le sens de marche, roues qui tournent.
-// baseY suit la verticale du pingouin (le vélo saute avec lui).
-export function drawEquippedBike(cx, baseY, flip, spin) {
-  const b = BIKES[G.equippedBike];
+// Un vélo agrandi ×PS, orienté selon le sens de marche, roues qui tournent.
+// baseY suit la verticale du cycliste (le vélo saute avec lui).
+export function drawBikeScaled(cx, baseY, b, flip, spin) {
   ctx.save();
   ctx.translate(cx, baseY);
   ctx.scale(flip ? -PS : PS, PS);        // miroir horizontal quand on va à gauche
   ctx.translate(-cx, -baseY);
   drawBike(cx - 8, baseY - 8, b, spin);  // roues posées sur baseY
   ctx.restore();
+}
+
+// Le vélo équipé par le joueur
+export function drawEquippedBike(cx, baseY, flip, spin) {
+  drawBikeScaled(cx, baseY, BIKES[G.equippedBike], flip, spin);
 }
 
 // Vignette de vélo pour l'inventaire (échelle ×1.6)

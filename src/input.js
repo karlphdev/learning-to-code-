@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════════════════
 import { G } from './state.js';
 import { initAudio, toggleMute } from './audio.js';
-import { kickBoulder, fireMissile } from './skills.js';
+import { kickBoulder, fireMissile, startPound, callGang } from './skills.js';
 import { setLevel } from './progression.js';
 
 export const keys = {};
@@ -28,12 +28,14 @@ document.addEventListener('keydown', e => {
   if (G.invOpen && k >= '1' && k <= '5') G.equippedBike = (+k) - 1;
 });
 
-// E = coup de lame ; R = missile
+// E = coup de lame ; R = missile ; S = SBAM ; G = appeler le gang
 document.addEventListener('keydown', e => {
   if (e.repeat || G.invOpen) return;
   let k = e.key.toLowerCase();
   if (k === 'e') kickBoulder();
   if (k === 'r') fireMissile();
+  if (k === 's') startPound();
+  if (k === 'g') callGang();
 });
 
 // Triche de test : P = niveau +1, O = niveau -1 (e.repeat autorisé : maintenir pour grimper vite)

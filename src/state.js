@@ -27,6 +27,13 @@ export const G = {
   player: { wx: 0, wy: GROUND_Y - 10, vy: 0, dir: 'right', onGround: true, walkFrame: 0, walkTimer: 0 },
   playerDx: 0,                   // déplacement horizontal du dernier pas (pour les traînées)
   flipAngle: 0,                  // angle du salto avant (radians) ; 0 = debout
+  doubleUsed: false,             // double saut déjà consommé pendant ce vol
+  backflipLeft: 0,               // radians de backflip restant à jouer (double saut)
+  backflipDir: 1,                // sens du backflip
+  pounding: false,               // SBAM en cours (plongée vers le sol)
+  sbamT: 0, sbamX: 0,            // onde de choc du SBAM (durée + position)
+  shake: 0,                      // secousse d'écran (décroît à chaque pas)
+  calling: 0,                    // le pingouin est au téléphone (appel du gang)
 
   summitCount: 0,                // nombre de sommets atteints = niveau de puissance
   won: false,                    // sommet atteint (bannière temporaire)

@@ -19,11 +19,17 @@ export function spawnEnemies() {
   for (let i = 0; i < n; i++) {
     let t = (i + 1) / (n + 1);
     let wx = MOUNTAIN_START + 140 + t * (SUMMIT_X - MOUNTAIN_START - 380) + ((i * 97) % 80);
-    enemies.push({ wx, home: wx, dir: 1, t: 0, f: 0, cool: 0, dead: false, deadT: 0 });
+    enemies.push({ wx, home: wx, dir: 1, t: 0, f: 0, cool: 0, stun: 0, dead: false, deadT: 0 });
   }
 }
 
-function splat(en) {                                 // le poisson explose en confettis
+// SBAM : étourdit tous les poissons vivants dans un rayon autour de wx
+export function stunEnemiesNear(wx, r) {
+  for (let en of enemies)
+    if (!en.dead && Math.abs(en.wx - wx) < r) { en.stun = 180; }
+}
+
+export function splat(en) {                          // le poisson explose en confettis
   for (let i = 0; i < 14; i++)
     parts.push({ wx: en.wx, wy: groundY(en.wx) - 8,
                  vx: (Math.random() - 0.5) * 3, vy: -Math.random() * 2.2,
@@ -34,24 +40,28 @@ function splat(en) {                                 // le poisson explose en co
 export function updateEnemies() {
   for (let en of enemies) {
     if (en.dead) { en.deadT++; continue; }
-    if (++en.t >= 8) { en.t = 0; en.f = (en.f + 1) % 2; }
-    if (en.cool > 0) en.cool--;
-    let distB = G.boulderWx - en.wx;
-    let spd = 0.9 + 0.06 * powerLvl();
-    if (Math.abs(distB) < 110 && en.cool === 0) {    // il fonce sur la balle
-      en.dir = distB > 0 ? 1 : -1;
-      en.wx += en.dir * spd;
-    } else {                                          // patrouille autour de chez lui
-      en.wx += en.dir * 0.35;
-      if (en.wx > en.home + 45) en.dir = -1;
-      if (en.wx < en.home - 45) en.dir = 1;
+    if (en.stun > 0) {                               // sonné par un SBAM : il voit des étoiles
+      en.stun--;
+    } else {
+      if (++en.t >= 8) { en.t = 0; en.f = (en.f + 1) % 2; }
+      if (en.cool > 0) en.cool--;
+      let distB = G.boulderWx - en.wx;
+      let spd = 0.9 + 0.06 * powerLvl();
+      if (Math.abs(distB) < 110 && en.cool === 0) {  // il fonce sur la balle
+        en.dir = distB > 0 ? 1 : -1;
+        en.wx += en.dir * spd;
+      } else {                                        // patrouille autour de chez lui
+        en.wx += en.dir * 0.35;
+        if (en.wx > en.home + 45) en.dir = -1;
+        if (en.wx < en.home - 45) en.dir = 1;
+      }
     }
     // contact avec la balle (raté si elle est en l'air : saute par-dessus !)
     if (Math.abs(en.wx - G.boulderWx) < BOULDER_R + 5 && G.boulderLift < 12) {
       let ballAttacks = G.boulderTumbling ||
         (powerLvl() >= CRUSH_LEVEL && ((G.isPushing && G.playerDx > 0) || G.boulderKickVx > 0.5));
       if (ballAttacks) { en.dead = true; en.deadT = 0; splat(en); }
-      else if (en.cool === 0) {
+      else if (en.cool === 0 && en.stun <= 0) {      // un poisson sonné ne tacle pas
         G.boulderKickVx = -3.8;                      // TACLE : la balle repart en arrière
         en.cool = 140;                               // puis il souffle un moment
         en.wx -= en.dir * 6;
@@ -93,5 +103,12 @@ function drawEnemy(en) {
   P(11, -10, 2, 2, '#ffffff'); P(12, -10, 1, 1, '#101018');
   P(13, -8, 2, 1, '#801020');
   if (en.dead) ctx.restore();
+  if (en.stun > 0 && !en.dead) {                     // étoiles qui tournent au-dessus de la tête
+    ctx.fillStyle = '#ffe040';
+    for (let k = 0; k < 3; k++) {
+      let a = G.tick * 0.15 + k * 2.1;
+      ctx.fillRect(sx + 8 + Math.round(Math.cos(a) * 6), gy - 17 + Math.round(Math.sin(a) * 2), 1, 1);
+    }
+  }
 }
 export function drawEnemies() { for (let en of enemies) drawEnemy(en); }

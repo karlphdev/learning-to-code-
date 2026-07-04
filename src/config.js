@@ -16,8 +16,12 @@ export const JUMP_BASE = -4.5;   // impulsion de saut de base
 export const PUSH_BASE = 1.7;    // force de poussée de base sur la balle
 
 // Paliers de skills
-export const FLIP_LEVEL = 15;    // niveau du salto avant (Entrée en l'air)
-export const CRUSH_LEVEL = 5;    // niveau où la balle écrase les poissons
+export const FLIP_LEVEL = 15;         // niveau du salto avant (Entrée en l'air)
+export const CRUSH_LEVEL = 5;         // niveau où la balle écrase les poissons
+export const DOUBLE_JUMP_LEVEL = 6;   // double saut backflip (Z en l'air)
+export const POUND_LEVEL = 6;         // SBAM : ground pound (S en l'air)
+export const GANG_LEVEL = 17;         // appeler le gang (G)
+export const TRANS_LEVEL = 20;        // transformation TRANSCENDANT DU BLOCK
 
 // Géographie du monde
 export const MOUNTAIN_START = 700;   // x où la jungle plate devient la montagne

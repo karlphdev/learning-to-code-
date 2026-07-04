@@ -34,11 +34,15 @@ function update() {
   updateWhispers();
   updateSkills();
   updateEnemies();
+  if (G.shake > 0) { G.shake *= 0.86; if (G.shake < 0.2) G.shake = 0; }   // la secousse s'amortit
 }
 
 // ── Une image ─────────────────────────────────────────────────────────
 function draw() {
   const frac = climbFrac();
+  ctx.save();                               // secousse d'écran (SBAM, explosions)
+  if (G.shake > 0)
+    ctx.translate(Math.round((Math.random() - 0.5) * G.shake), Math.round((Math.random() - 0.5) * G.shake));
   drawSky(frac);
   drawSun();
   drawClouds();
@@ -71,6 +75,7 @@ function draw() {
   if (G.won && G.tick - G.wonTimer < 200) drawSummitBanner();   // bannière qui s'efface au bout de ~3s
   else G.won = false;
   if (G.invOpen) drawInventory();
+  ctx.restore();                            // fin de la secousse d'écran
 }
 
 // ── Boucle à pas de temps fixe ────────────────────────────────────────

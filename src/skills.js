@@ -7,13 +7,15 @@
 //   Niv 13 : bébé pingouin sur mini-vélo qui suit partout
 //   Niv 14 : pingouin ROUGE (palette dans player.js)
 // ═══════════════════════════════════════════════════════════════════
-import { W, BOULDER_R, BOULDER_FOOT, RIDE_LIFT, FLIP_LEVEL, BABY_LAG } from './config.js';
+import { W, BOULDER_R, BOULDER_FOOT, RIDE_LIFT, FLIP_LEVEL, BABY_LAG,
+         POUND_LEVEL, GANG_LEVEL, TRANS_LEVEL } from './config.js';
 import { ctx, G } from './state.js';
 import { keys } from './input.js';
 import { groundY } from './world.js';
 import { powerLvl } from './progression.js';
-import { drawSprite, SPR_SIDE, playerPal } from './player.js';
-import { drawBike, BIKES } from './bikes.js';
+import { drawSprite, drawPenguinScaled, SPR_SIDE, PCOL, playerPal } from './player.js';
+import { drawBike, drawBikeScaled, BIKES } from './bikes.js';
+import { enemies, splat, stunEnemiesNear } from './enemies.js';
 
 // ── Textes de déblocage (bannière de sommet + HUD) ────────────────────
 export const SKILL_UNLOCKS = {
@@ -24,20 +26,59 @@ export const SKILL_UNLOCKS = {
   13: 'Bebe pingouin sur mini velo',
   14: 'Pingouin ROUGE',
   15: 'Entree : salto en l\'air',
+  17: 'G : APPELER LE GANG !!!',
+  20: 'TRANSCENDANT DU BLOCK',
 };
 for (let l = 4; l <= 10; l++) SKILL_UNLOCKS[l] = 'La balle se pousse plus loin';
 SKILL_UNLOCKS[5] = 'La balle ECRASE les poissons';
+SKILL_UNLOCKS[6] = 'DOUBLE SAUT + S : SBAM !';
 
 export function skillHints() {
   let l = powerLvl(), h = [];
   if (l >= 2)  h.push('Poissons: saute-les !');
   if (l >= 3)  h.push('E: pousser la balle');
   if (l >= 5)  h.push('Balle = ecrase-poissons');
+  if (l >= 6)  h.push('Z en l\'air: double saut');
+  if (l >= 6)  h.push('S en l\'air: SBAM');
   if (l >= 11) h.push('R: missile');
   if (l >= 12) h.push('U: fontaine');
   if (l >= 13) h.push('Bebe pingouin te suit !');
   if (l >= FLIP_LEVEL) h.push('SALTO: Entree en saut');
+  if (l >= GANG_LEVEL) h.push('G: appelle le gang');
+  if (l >= TRANS_LEVEL) h.push('ROI DU BLOCK. Respect.');
   return h;
+}
+
+// ── Niv 6 : SBAM (ground pound) ───────────────────────────────────────
+// S en l'air : plongée fulgurante ; à l'impact, cratère de poussière,
+// écran qui tremble et poissons étourdis autour.
+export function startPound() {
+  if (powerLvl() < POUND_LEVEL || G.player.onGround || G.pounding) return;
+  G.pounding = true;
+  if (G.player.vy < 7) G.player.vy = 7;        // plongée
+}
+export function sbamImpact() {                 // appelé par player.js à l'atterrissage
+  const wx = G.player.wx + 4;
+  const gy = groundY(wx);
+  G.shake = 7;                                 // l'écran tremble
+  G.sbamT = 24; G.sbamX = wx;                  // onde de choc au sol
+  for (let i = 0; i < 30; i++) {               // nuage de poussière des deux côtés
+    let d = i % 2 ? 1 : -1;
+    parts.push({ wx, wy: gy - 2, vx: d * (0.8 + Math.random() * 3.2), vy: -Math.random() * 2.4,
+                 g: 0.12, life: 0, max: 40, big: i % 3 === 0,
+                 col: ['#d8cfc0', '#ffffff', '#a89880'][i % 3] });
+  }
+  stunEnemiesNear(wx, 70);                     // les poissons voient des étoiles
+}
+
+// ── Niv 17 : APPELER LE GANG (G) ──────────────────────────────────────
+// Le pingouin sort son téléphone... et 3 pingouins du gang traversent
+// l'écran à toute vitesse en écrasant tous les poissons sur leur passage.
+let gang = [], gangCool = 0;
+export function callGang() {
+  if (powerLvl() < GANG_LEVEL || gangCool > 0 || G.calling > 0 || gang.length) return;
+  G.calling = 45;          // le pingouin passe l'appel
+  gangCool = 900;          // recharge ~15 s
 }
 
 // ── Niv 3-10 : coup de lame (E) — la balle part rouler en avant ──────
@@ -110,6 +151,20 @@ export function updateSkills() {
   // trace du joueur pour le bébé
   babyTrail.push({ wx: player.wx, wy: player.wy, dir: player.dir });
   if (babyTrail.length > BABY_LAG) babyTrail.shift();
+  // onde de choc du SBAM qui s'estompe
+  if (G.sbamT > 0) G.sbamT--;
+  // le gang
+  if (gangCool > 0) gangCool--;
+  if (G.calling > 0 && --G.calling === 0) {           // fin de l'appel : le gang débarque
+    for (let i = 0; i < 3; i++)
+      gang.push({ wx: G.camX - 24 - i * 30, vx: 5 + (i % 2) * 0.6, bike: [0, 3, 4][i] });
+  }
+  for (let g2 of gang) {
+    g2.wx += g2.vx;
+    for (let en of enemies)                           // drive-by : tout poisson croisé est écrasé
+      if (!en.dead && Math.abs(en.wx - g2.wx) < 12) { en.dead = true; en.deadT = 0; splat(en); }
+  }
+  gang = gang.filter(g2 => g2.wx < G.camX + W + 80);
 }
 
 export function drawBaby() {
@@ -152,5 +207,47 @@ export function drawSkillFx() {
     ctx.fillStyle = '#e02828'; ctx.fillRect(d > 0 ? sx + 3 : sx - 4, sy, 1, 2);                  // ogive
     ctx.fillStyle = (tick & 2) ? '#ffb020' : '#ff6010';
     ctx.fillRect(d > 0 ? sx - 5 : sx + 3, sy, 2, 2);                                             // flamme
+  }
+  // onde de choc du SBAM : anneau blanc qui s'élargit au sol
+  if (G.sbamT > 0) {
+    let t = 1 - G.sbamT / 24;
+    let rw = Math.round(8 + t * 55);
+    let gy = Math.round(groundY(G.sbamX));
+    let cx2 = Math.round(G.sbamX - G.camX);
+    ctx.fillStyle = `rgba(255,255,255,${(0.7 * (1 - t)).toFixed(3)})`;
+    ctx.fillRect(cx2 - rw, gy - 1, rw * 2, 2);
+    ctx.fillStyle = `rgba(216,207,192,${(0.5 * (1 - t)).toFixed(3)})`;
+    ctx.fillRect(cx2 - Math.round(rw * 0.7), gy - 3, Math.round(rw * 1.4), 1);
+  }
+  // le téléphone pixel pendant l'appel du gang
+  if (G.calling > 0) {
+    let px = Math.round(G.player.wx - G.camX), py = Math.round(G.player.wy);
+    let d = G.player.dir === 'left' ? -1 : 1;
+    let hx = px + 4 + d * 8, hy = py - RIDE_LIFT - 6;
+    ctx.fillStyle = '#181820'; ctx.fillRect(hx, hy, 3, 6);                 // le téléphone
+    ctx.fillStyle = '#7cf0ff'; ctx.fillRect(hx + 1, hy + 1, 2, 3);         // écran allumé
+    ctx.fillStyle = '#ffffff';                                             // « ... » de l'appel
+    let dots = Math.min(3, 1 + (((45 - G.calling) / 12) | 0));
+    for (let k = 0; k < dots; k++) ctx.fillRect(hx - 1 + k * 3, hy - 5, 1, 1);
+  }
+  // les riders du gang : lunettes noires, chaîne en or, plein gaz
+  for (let g2 of gang) {
+    let sx = Math.round(g2.wx - G.camX);
+    let gy = Math.round(groundY(g2.wx));
+    let py = gy - 10;
+    ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.fillRect(sx - 3, gy, 14, 2);
+    drawBikeScaled(sx + 4, gy, BIKES[g2.bike], false, tick * 0.5);
+    drawPenguinScaled(SPR_SIDE, sx, py - RIDE_LIFT, false, PCOL);
+    // accessoires, dessinés dans le même repère ×2 ancré sur les pieds
+    let ax = sx + 4, ay = py - RIDE_LIFT + 10, ry = py - RIDE_LIFT;
+    ctx.save();
+    ctx.translate(ax, ay); ctx.scale(2, 2); ctx.translate(-ax, -ay);
+    ctx.fillStyle = '#101014'; ctx.fillRect(sx + 1, ry + 2, 5, 1);         // lunettes noires
+    ctx.fillStyle = '#ffd020'; ctx.fillRect(sx + 2, ry + 4, 3, 1);         // chaîne en or
+    ctx.fillRect(sx + 3, ry + 5, 1, 1);                                    // pendentif
+    ctx.restore();
+    // traînée de vitesse
+    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    for (let k = 0; k < 3; k++) ctx.fillRect(sx - 8 - k * 5, py + 2 + k * 3, 4, 1);
   }
 }
