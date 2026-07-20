@@ -3,13 +3,49 @@
 <head>
   <meta charset="UTF-8">
   <title>Penguin World</title>
+
+  <!-- Mode application mobile : plein écran, sans zoom ni scroll -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#04050f">
+  <meta name="color-scheme" content="dark">
+
+  <!-- iOS : ajouter à l'écran d'accueil et lancer en plein écran -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Penguin World">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.webmanifest">
+
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="wrap">
     <canvas id="game"></canvas>
   </div>
+
+  <!-- Indice affiché uniquement sur ordinateur (clavier) -->
   <p class="hint">Q/D ou ←/→ rouler · Z/↑ sauter · I : inventaire vélos (1-5) · Skills : 2 saut avec balle · 3→10 E pousser · 5 écrase-poissons · 6 DOUBLE SAUT (Z×2) + SBAM (S en l'air) · 11 R missile · 12 U fontaine · 13 bébé · 14 ROUGE · 15 salto (Entrée) · 17 G APPELER LE GANG · 20 TRANSCENDANT DU BLOCK 👑 · Test : P/O niveau ±1</p>
+
+  <!-- Invitation à tourner le téléphone (paysage) -->
+  <div class="rotate-hint"><span>🐧 Tourne ton téléphone<br>en mode paysage</span></div>
+
   <script type="module" src="/src/main.js"></script>
+  <script>
+    // Enregistre le service worker (installable + hors-ligne).
+    // Chemin RELATIF ('sw.js') pour fonctionner sur un sous-chemin ; sa portée
+    // (scope) couvre alors automatiquement tout le dossier de l'app.
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+      });
+    }
+    // Empêche le zoom par double-tap et le pincement sur mobile
+    document.addEventListener('gesturestart', e => e.preventDefault());
+    document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
+  </script>
 </body>
 </html>

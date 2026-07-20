@@ -6,6 +6,7 @@
 import { W, GROUND_Y } from './config.js';
 import { ctx, G, fitCanvas } from './state.js';
 import './input.js';                       // branche tous les écouteurs clavier
+import './touch.js';                       // branche les commandes tactiles (mode mobile)
 import { climbFrac, groundY } from './world.js';
 import { buildGradients, drawSky, drawSun, drawClouds, drawMtnRidges,
          drawMtnSnowfall, drawMtnFog, drawVignette } from './background.js';

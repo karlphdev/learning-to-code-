@@ -111,3 +111,171 @@ body {
   text-align: center;
   line-height: 1.7;
 }
+
+/* ════════════════════════════════════════════════════════════════════
+   MODE APPLICATION MOBILE — commandes tactiles, plein écran, paysage.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* Les commandes tactiles n'existent que sur écran tactile / petit écran. */
+#touch { display: none; }
+
+.rotate-hint { display: none; }
+
+@media (pointer: coarse), (max-width: 860px) {
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    padding: 0;
+    background: #04050f;
+  }
+
+  /* Le jeu occupe le plus grand cadre 16:9 possible, centré, plein écran. */
+  .wrap {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    width: min(100dvw, calc(100dvh * 16 / 9));
+    height: min(100dvh, calc(100dvw * 9 / 16));
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .hint { display: none; }
+
+  /* ── Couche des commandes tactiles ─────────────────────────────── */
+  #touch {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;                 /* seuls les boutons captent les touches */
+    font-family: monospace;
+  }
+  #touch button { pointer-events: auto; }
+
+  /* Barre du haut : vélos + son */
+  .tbar {
+    position: absolute;
+    top: calc(env(safe-area-inset-top) + 8px);
+    right: calc(env(safe-area-inset-right) + 10px);
+    display: flex;
+    gap: 8px;
+  }
+
+  /* Colonnes de commande gauche / droite */
+  .tcol {
+    position: absolute;
+    bottom: calc(env(safe-area-inset-bottom) + 10px);
+    display: flex;
+    align-items: flex-end;
+  }
+  .tleft {
+    left: calc(env(safe-area-inset-left) + 10px);
+    gap: 10px;
+  }
+  .tright {
+    right: calc(env(safe-area-inset-right) + 10px);
+    flex-wrap: wrap-reverse;
+    justify-content: flex-end;
+    align-content: flex-end;
+    gap: 9px;
+    max-width: 46vw;
+  }
+
+  /* Boutons génériques */
+  .tkey, .tbtn, .tbike {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid rgba(140, 200, 255, 0.35);
+    background: rgba(12, 18, 40, 0.42);
+    color: #eaf2ff;
+    border-radius: 50%;
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4), inset 0 0 12px rgba(120, 190, 255, 0.12);
+    line-height: 1;
+    transition: transform .05s, background .1s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .tk-ic  { font-size: 6.2vmin; }
+  .tk-sub { font-size: 2.1vmin; letter-spacing: 1px; color: #9fc4ff; margin-top: 2px; }
+
+  .tkey.dpad { width: 15vmin; height: 15vmin; }
+  .tkey.act  { width: 13vmin; height: 13vmin; }
+  .tkey.act.primary {
+    width: 18vmin; height: 18vmin;
+    border-color: rgba(255, 210, 90, 0.7);
+    background: rgba(60, 42, 8, 0.5);
+    box-shadow: 0 2px 14px rgba(0,0,0,.45), inset 0 0 16px rgba(255, 200, 80, 0.22);
+  }
+  .tkey.act.primary .tk-ic { font-size: 7.4vmin; }
+
+  .tbtn { width: 10vmin; height: 10vmin; }
+  .tbtn .tk-ic { font-size: 4.6vmin; }
+  .tbtn.off { opacity: 0.4; }
+
+  /* Retour visuel à l'appui */
+  .tkey.down, .tbtn:active, .tbike:active {
+    transform: scale(0.92);
+    background: rgba(120, 190, 255, 0.32);
+  }
+
+  /* Bouton verrouillé (palier non atteint) : masqué */
+  .tkey.locked { display: none; }
+
+  /* ── Sélecteur de vélo (inventaire ouvert) ─────────────────────── */
+  .tinv {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 3vmin;
+    background: rgba(4, 5, 15, 0.55);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+  #touch.inv-open .tinv { display: flex; }
+  /* Quand l'inventaire est ouvert, on masque les manettes de jeu. */
+  #touch.inv-open .tcol { display: none; }
+
+  .tbike { width: 16vmin; height: 16vmin; }
+  .tbike .tk-ic  { font-size: 6vmin; }
+  .tbike .tk-sub { font-size: 2vmin; }
+
+  /* ── Invite à passer en paysage (affichée en mode portrait) ────── */
+  @media (orientation: portrait) {
+    .rotate-hint {
+      display: flex;
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      align-items: center;
+      justify-content: center;
+      background: #04050f;
+      color: #cfe0ff;
+      text-align: center;
+      font-family: monospace;
+      font-size: 5vw;
+      letter-spacing: 2px;
+      line-height: 1.8;
+      text-transform: uppercase;
+    }
+    .rotate-hint span { animation: rotatePulse 1.6s ease-in-out infinite; }
+  }
+}
+
+@keyframes rotatePulse {
+  0%, 100% { opacity: 0.55; transform: scale(0.98); }
+  50%      { opacity: 1;    transform: scale(1.04); }
+}
